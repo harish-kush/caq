@@ -1,0 +1,159 @@
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+class Transaction {
+public:
+    string type;
+    double amount;
+    string target;
+
+    Transaction(string type, double amount, string target = "") {
+        this->type = type;
+        this->amount = amount;
+        this->target = target;
+    }
+
+    void display() {
+        cout << "- " << type << ": ₹" << amount;
+        if (!target.empty())
+            cout << " to/from " << target;
+        cout << endl;
+    }
+};
+
+class Account {
+private:
+    string accNumber;
+    double balance;
+    vector<Transaction> history;
+
+public:
+    Account(string accNo) {
+        accNumber = accNo;
+        balance = 0.0;
+    }
+
+    string getAccNumber() {
+        return accNumber;
+    }
+
+    double getBalance() {
+        return balance;
+    }
+
+    void deposit(double amount) {
+        balance += amount;
+        history.push_back(Transaction("Deposit", amount));
+        cout << "✅ ₹" << amount << " deposited successfully.\n";
+    }
+
+    bool withdraw(double amount) {
+        if (amount > balance) {
+            cout << "❌ Insufficient balance.\n";
+            return false;
+        }
+        balance -= amount;
+        history.push_back(Transaction("Withdrawal", amount));
+        cout << "✅ ₹" << amount << " withdrawn successfully.\n";
+        return true;
+    }
+
+    bool transfer(Account &receiver, double amount) {
+        if (withdraw(amount)) {
+            receiver.deposit(amount);
+            history.push_back(Transaction("Transfer", amount, receiver.getAccNumber()));
+            return true;
+        }
+        return false;
+    }
+
+    void showHistory() {
+        cout << "\n🧾 Transaction History for Account " << accNumber << ":\n";
+        for (auto &t : history) {
+            t.display();
+        }
+    }
+
+    void showDetails() {
+        cout << "\n📋 Account: " << accNumber << "\nBalance: ₹" << balance << endl;
+        showHistory();
+    }
+};
+
+class Customer {
+private:
+    string name;
+    string customerId;
+    Account account;
+
+public:
+    Customer(string name, string id) : name(name), customerId(id), account(id + "-ACC") {}
+
+    string getId() {
+        return customerId;
+    }
+
+    Account& getAccount() {
+        return account;
+    }
+
+    void showCustomerInfo() {
+        cout << "\n👤 Customer: " << name << " (" << customerId << ")\n";
+        account.showDetails();
+    }
+};
+
+int main() {
+    // Sample customers
+    Customer c1("Harish", "C001");
+    Customer c2("Neha", "C002");
+
+    int choice;
+    double amount;
+
+    while (true) {
+        cout << "\n====== BANK MENU ======\n";
+        cout << "1. Deposit (Harish)\n2. Withdraw (Harish)\n3. Transfer Harish → Neha\n4. Show Harish's Account\n5. Show Neha's Account\n6. Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                cout << "Enter amount to deposit: ₹";
+                cin >> amount;
+                c1.getAccount().deposit(amount);
+                break;
+
+            case 2:
+                cout << "Enter amount to withdraw: ₹";
+                cin >> amount;
+                c1.getAccount().withdraw(amount);
+                break;
+
+            case 3:
+                cout << "Enter amount to transfer to Neha: ₹";
+                cin >> amount;
+                c1.getAccount().transfer(c2.getAccount(), amount);
+                break;
+
+            case 4:
+                c1.showCustomerInfo();
+                break;
+
+            case 5:
+                c2.showCustomerInfo();
+                break;
+
+            case 6:
+                cout << "👋 Thank you for using the Banking System.\n";
+                return 0;
+
+            default:
+                cout << "❌ Invalid choice. Try again.\n";
+        }
+    }
+
+    return 0;
+}
