@@ -1,0 +1,81 @@
+#include <iostream>
+using namespace std;
+
+#define N 9
+
+class SudokuSolver {
+private:
+    int grid[N][N];
+
+public:
+    void inputGrid() {
+        cout << "Enter the Sudoku grid (use 0 for empty cells):\n";
+        for (int i = 0; i < N; i++)
+            for (int j = 0; j < N; j++)
+                cin >> grid[i][j];
+    }
+
+    void printGrid() {
+        cout << "\nSolved Sudoku:\n";
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                cout << grid[i][j] << " ";
+            }
+            cout << endl;
+        }
+    }
+
+    bool isValid(int row, int col, int num) {
+        // Check row
+        for (int x = 0; x < N; x++)
+            if (grid[row][x] == num)
+                return false;
+
+        // Check column
+        for (int x = 0; x < N; x++)
+            if (grid[x][col] == num)
+                return false;
+
+        // Check 3x3 box
+        int startRow = row - row % 3;
+        int startCol = col - col % 3;
+
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                if (grid[i + startRow][j + startCol] == num)
+                    return false;
+
+        return true;
+    }
+
+    bool solveSudoku() {
+        for (int row = 0; row < N; row++) {
+            for (int col = 0; col < N; col++) {
+                if (grid[row][col] == 0) {
+                    for (int num = 1; num <= 9; num++) {
+                        if (isValid(row, col, num)) {
+                            grid[row][col] = num;
+                            if (solveSudoku())
+                                return true;
+                            grid[row][col] = 0; // backtrack
+                        }
+                    }
+                    return false; // no valid number found
+                }
+            }
+        }
+        return true; // puzzle solved
+    }
+};
+
+int main() {
+    SudokuSolver solver;
+    solver.inputGrid();
+
+    if (solver.solveSudoku())
+        solver.printGrid();
+    else
+        cout << "❌ No solution exists for the given Sudoku.\n";
+
+    return 0;
+}
